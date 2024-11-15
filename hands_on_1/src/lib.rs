@@ -15,7 +15,7 @@ impl Node {
 }
 
 pub struct Tree {
-    nodes: Vec<Node>,
+    nodes: Vec<Node>, 
 }
 
 impl Tree {
