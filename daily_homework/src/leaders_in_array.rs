@@ -1,4 +1,4 @@
-// returns leaders in array, elements which are greater or equal to all elments after
+// returns leaders in array all elements which are greater or equal to every element on it's right or after him
 
 pub fn arrayleader<T>(list: &[T]) -> Vec<T>
 where
@@ -20,4 +20,5 @@ where
     leaders
 }
 
-// runs in O(n) time, in this implementation 3*n at most. Requires O(n) space at most
+// runs in O(n) time, in this implementation 3*n in w.c. 
+// requires O(n) space 
