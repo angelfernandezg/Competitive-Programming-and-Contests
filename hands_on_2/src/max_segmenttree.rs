@@ -67,8 +67,8 @@ impl MaxSegmentTree {
         }
     }
 
-    // Function to query the maximum in the range [l, r]
-    pub fn query(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize) -> i32 {
+    // Function to find the maximum in the range [l, r]
+    pub fn get_max(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize) -> i32 {
         self.push(v, tl, tr);
         if l > r {
             return i32::MIN;
@@ -77,8 +77,8 @@ impl MaxSegmentTree {
             return self.t[v];
         }
         let tm = (tl + tr) / 2;
-        let left_max = self.query(v * 2, tl, tm, l, r.min(tm));
-        let right_max = self.query(v * 2 + 1, tm + 1, tr, l.max(tm + 1), r);
+        let left_max = self.get_max(v * 2, tl, tm, l, r.min(tm));
+        let right_max = self.get_max(v * 2 + 1, tm + 1, tr, l.max(tm + 1), r);
         left_max.max(right_max)
     }
 
@@ -89,6 +89,97 @@ impl MaxSegmentTree {
 
     // Public method to get the maximum in the range [i, j]
     pub fn range_max(&mut self, l: usize, r: usize) -> i32 {
-        self.query(1, 0, self.n - 1, l-1, r-1) //same as in line 77
+        self.get_max(1, 0, self.n - 1, l-1, r-1) //same as in line 77
+    }
+
+    
+
+}
+
+//TASK 02
+//Same structure but different implementation on exercise 2
+pub struct SegmentTree {
+    n: usize,
+    tree: Vec<Vec<i32>>, // Each node contains a vector that keeps frequency counts
+    lazy: Vec<i32>,      // Lazy propagation array for efficient updates
+}
+
+impl SegmentTree {
+    // Constructor to initialize the segment tree
+    pub fn new(n: usize) -> Self {
+        SegmentTree {
+            n,
+            tree: vec![vec![0; n + 1]; 4 * n], // +1 to cover all possible counts
+            lazy: vec![0; 4 * n],
+        }
+    }
+
+    // Helper function to build the tree
+    pub fn build(&mut self, v: usize, tl: usize, tr: usize, count: &Vec<i32>) {
+        if tl == tr {
+            self.tree[v][count[tl] as usize] += 1;
+        } else {
+            let tm = (tl + tr) / 2;
+            self.build(v * 2, tl, tm, count);
+            self.build(v * 2 + 1, tm + 1, tr, count);
+            self.tree[v] = self.merge(&self.tree[v * 2], &self.tree[v * 2 + 1]);
+        }
+    }
+
+    // Function to merge two frequency vectors
+    pub fn merge(&self, left: &Vec<i32>, right: &Vec<i32>) -> Vec<i32> {
+        left.iter().zip(right).map(|(l, r)| l + r).collect()
+    }
+
+    // Apply lazy updates to the current node
+    pub fn apply(&mut self, v: usize, tl: usize, tr: usize) {
+        if self.lazy[v] != 0 {
+            // Shift all counts by lazy[v]
+            let shift = self.lazy[v] as usize;
+            let mut new_freq = vec![0; self.n + 1];
+            for i in 0..=self.n {
+                if i + shift <= self.n {
+                    new_freq[i + shift] = self.tree[v][i];
+                }
+            }
+            self.tree[v] = new_freq;
+            if tl != tr {
+                self.lazy[v * 2] += self.lazy[v];
+                self.lazy[v * 2 + 1] += self.lazy[v];
+            }
+            self.lazy[v] = 0;
+        }
+    }
+
+    // Range update function
+    pub fn update(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize, delta: i32) {
+        self.apply(v, tl, tr);
+        if l > r {
+            return;
+        }
+        if l == tl && r == tr {
+            self.lazy[v] += delta;
+            self.apply(v, tl, tr);
+        } else {
+            let tm = (tl + tr) / 2;
+            self.update(v * 2, tl, tm, l, r.min(tm), delta);
+            self.update(v * 2 + 1, tm + 1, tr, l.max(tm + 1), r, delta);
+            self.tree[v] = self.merge(&self.tree[v * 2], &self.tree[v * 2 + 1]);
+        }
+    }
+
+    // Range query function
+    pub fn query(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize, k: usize) -> bool {
+        self.apply(v, tl, tr);
+        if l > r {
+            return false;
+        }
+        if l == tl && r == tr {
+            return self.tree[v][k] > 0;
+        }
+        let tm = (tl + tr) / 2;
+        self.query(v * 2, tl, tm, l, r.min(tm), k)
+            || self.query(v * 2 + 1, tm + 1, tr, l.max(tm + 1), r, k)
     }
 }
+
