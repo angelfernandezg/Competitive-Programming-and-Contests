@@ -72,7 +72,7 @@ fn main() {
         } else {
             // IsThere query: 1 i j k
             let (i, j, k) = (query[1], query[2], query[3]);
-            if seg_tree.query(1, 0, n - 1, i, j, k) {
+            if seg_tree.query(1, 0, n - 1, i, j, k.try_into().unwrap()) {
                 println!("1");
             } else {
                 println!("0");
@@ -223,7 +223,7 @@ mod tests {
                     .map(|x| x.parse().unwrap())
                     .collect();
                 let (i, j, k) = (query[0], query[1], query[2]);
-                if seg_tree.query(1, 0, n - 1, i, j, k) {
+                if seg_tree.query(1, 0, n - 1, i, j, k.try_into().unwrap()) {
                     output.push("1".to_string());
                 } else {
                     output.push("0".to_string());

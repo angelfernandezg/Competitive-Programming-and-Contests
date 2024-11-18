@@ -26,7 +26,7 @@ impl MaxSegmentTree {
     }
 
     // Recursive function to build the Segment Tree
-    pub fn build(&mut self, a: &[i32], v: usize, tl: usize, tr: usize) {
+    fn build(&mut self, a: &[i32], v: usize, tl: usize, tr: usize) {
         if tl == tr {
             self.t[v] = a[tl];
         } else {
@@ -38,7 +38,7 @@ impl MaxSegmentTree {
     }
 
     // Function to push the lazy updates
-    pub fn push(&mut self, v: usize, tl: usize, tr: usize) {
+    fn push(&mut self, v: usize, tl: usize, tr: usize) {
         if let Some(lazy_value) = self.lazy[v] {
             self.t[v] = self.t[v].min(lazy_value);
             if tl != tr {
@@ -51,7 +51,7 @@ impl MaxSegmentTree {
     }
 
     // Function to apply range update
-    pub fn update(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize, t: i32) {
+    fn update(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize, t: i32) {
         self.push(v, tl, tr);
         if l > r {
             return;
@@ -68,12 +68,12 @@ impl MaxSegmentTree {
     }
 
     // Function to find the maximum in the range [l, r]
-    pub fn get_max(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize) -> i32 {
+    fn get_max(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize) -> i32 {
         self.push(v, tl, tr);
         if l > r {
             return i32::MIN;
         }
-        if l == tl && r == tr {
+        if l <= tl && r >= tr {
             return self.t[v];
         }
         let tm = (tl + tr) / 2;
@@ -100,8 +100,8 @@ impl MaxSegmentTree {
 //Same structure but different implementation on exercise 2
 pub struct SegmentTree {
     n: usize,
-    tree: Vec<Vec<i32>>, // Each node contains a vector that keeps frequency counts
-    lazy: Vec<i32>,      // Lazy propagation array for efficient updates
+    tree: Vec<Vec<i32>>,  // Each node contains a vector that keeps frequency counts
+    lazy: Vec<Option<i32>>, // Lazy propagation array using Option for efficient updates
 }
 
 impl SegmentTree {
@@ -110,7 +110,7 @@ impl SegmentTree {
         SegmentTree {
             n,
             tree: vec![vec![0; n + 1]; 4 * n], // +1 to cover all possible counts
-            lazy: vec![0; 4 * n],
+            lazy: vec![None; 4 * n],          // Initialize lazy array with None
         }
     }
 
@@ -131,11 +131,11 @@ impl SegmentTree {
         left.iter().zip(right).map(|(l, r)| l + r).collect()
     }
 
-    // Apply lazy updates to the current node
-    pub fn apply(&mut self, v: usize, tl: usize, tr: usize) {
-        if self.lazy[v] != 0 {
-            // Shift all counts by lazy[v]
-            let shift = self.lazy[v] as usize;
+    // Function to push lazy updates to children
+    fn push(&mut self, v: usize, tl: usize, tr: usize) {
+        if let Some(lazy_value) = self.lazy[v] {
+            // Apply the lazy update
+            let shift = lazy_value as usize;
             let mut new_freq = vec![0; self.n + 1];
             for i in 0..=self.n {
                 if i + shift <= self.n {
@@ -143,23 +143,26 @@ impl SegmentTree {
                 }
             }
             self.tree[v] = new_freq;
+            
+            // Propagate the lazy update to children if not a leaf node
             if tl != tr {
-                self.lazy[v * 2] += self.lazy[v];
-                self.lazy[v * 2 + 1] += self.lazy[v];
+                self.lazy[v * 2] = Some(self.lazy[v * 2].unwrap_or(0) + lazy_value);
+                self.lazy[v * 2 + 1] = Some(self.lazy[v * 2 + 1].unwrap_or(0) + lazy_value);
             }
-            self.lazy[v] = 0;
+            // Clear the lazy value at this node
+            self.lazy[v] = None;
         }
     }
 
-    // Range update function
+    // Range update function using lazy propagation
     pub fn update(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize, delta: i32) {
-        self.apply(v, tl, tr);
+        self.push(v, tl, tr);
         if l > r {
             return;
         }
         if l == tl && r == tr {
-            self.lazy[v] += delta;
-            self.apply(v, tl, tr);
+            self.lazy[v] = Some(delta);
+            self.push(v, tl, tr);
         } else {
             let tm = (tl + tr) / 2;
             self.update(v * 2, tl, tm, l, r.min(tm), delta);
@@ -170,7 +173,7 @@ impl SegmentTree {
 
     // Range query function
     pub fn query(&mut self, v: usize, tl: usize, tr: usize, l: usize, r: usize, k: usize) -> bool {
-        self.apply(v, tl, tr);
+        self.push(v, tl, tr);
         if l > r {
             return false;
         }
@@ -182,4 +185,6 @@ impl SegmentTree {
             || self.query(v * 2 + 1, tm + 1, tr, l.max(tm + 1), r, k)
     }
 }
+
+
 
