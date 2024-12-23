@@ -1,0 +1,1 @@
+C:\Users\angel\Desktop\Pisa\Competitive_programming\Competitive-Programming-and-Contests\hands_on_2\target\debug\libhands_on_2.rlib: C:\Users\angel\Desktop\Pisa\Competitive_programming\Competitive-Programming-and-Contests\hands_on_2\src\lib.rs

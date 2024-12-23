@@ -1,84 +1,13 @@
-mod max_segmenttree;
-use max_segmenttree::MaxSegmentTree;
-use max_segmenttree::SegmentTree;
+mod lib;
+use lib::MaxSegmentTree;
+use lib::SegmentTree;
 
 use std::fs;
 use std::io::{self, BufRead};
 use std::path::Path;
 
 fn main() {
-    let stdin = io::stdin();
-    let mut input = stdin.lock().lines();
-
-    // Read n and m
-    let first_line = input.next().unwrap().unwrap();
-    let parts: Vec<usize> = first_line
-        .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect();
-    let n = parts[0];
-    let m = parts[1];
-
-    // Read array A
-    let second_line = input.next().unwrap().unwrap();
-    let a: Vec<i32> = second_line
-        .split_whitespace()
-        .map(|x| x.parse().unwrap())
-        .collect();
-
-    // Initialize the segment tree
-    let mut seg_tree = MaxSegmentTree::new(&a);
-
-    // Process each query
-    for _ in 0..m {
-        let line = input.next().unwrap().unwrap();
-        let query: Vec<i32> = line.split_whitespace().map(|x| x.parse().unwrap()).collect();
-
-        if query[0] == 0 {
-            // Update query: 0 i j T
-            let i = query[1] as usize;
-            let j = query[2] as usize;
-            let t = query[3];
-            seg_tree.range_update(i, j, t);
-        } else if query[0] == 1 {
-            // Max query: 1 i j
-            let i = query[1] as usize;
-            let j = query[2] as usize;
-            let result = seg_tree.range_max(i, j);
-            println!("{}", result);
-        }
-    }
-    // Task 2 main
-    let stdin = io::stdin();
-    let mut lines = stdin.lock().lines();
-    let first_line = lines.next().unwrap().unwrap();
-    let parts: Vec<usize> = first_line.split_whitespace().map(|x| x.parse().unwrap()).collect();
-    let n = parts[0];
-    let m = parts[1];
-
-    let second_line = lines.next().unwrap().unwrap();
-    let count: Vec<i32> = second_line.split_whitespace().map(|x| x.parse().unwrap()).collect();
-
-    let mut seg_tree = SegmentTree::new(n);
-    seg_tree.build(1, 0, n - 1, &count);
-
-    for _ in 0..m {
-        let line = lines.next().unwrap().unwrap();
-        let query: Vec<usize> = line.split_whitespace().map(|x| x.parse().unwrap()).collect();
-        if query[0] == 0 {
-            // Update query: 0 i j delta
-            let (i, j, delta) = (query[1], query[2], query[3] as i32);
-            seg_tree.update(1, 0, n - 1, i, j, delta);
-        } else {
-            // IsThere query: 1 i j k
-            let (i, j, k) = (query[1], query[2], query[3]);
-            if seg_tree.query(1, 0, n - 1, i, j, k.try_into().unwrap()) {
-                println!("1");
-            } else {
-                println!("0");
-            }
-        }
-    }
+    println!("Hello world")    
 }
 
 mod tests {
@@ -165,7 +94,6 @@ mod tests {
 
     #[test]
     fn run_testset_02() {
-        let mut all_tests_passed = true;
     
         for i in 0..8 {
             let input_file = format!("testset_02/input{}.txt", i);
@@ -236,14 +164,7 @@ mod tests {
                 println!("Test {} passed.", i);
             } else {
                 println!("Test {} failed.", i);
-                all_tests_passed = false;
             }
-        }
-    
-        if all_tests_passed {
-            println!("All tests passed!");
-        } else {
-            println!("Some tests failed.");
         }
     }
 }
